@@ -30,3 +30,6 @@ Homestead.json
 auth.json
 
 .DS_Store
+
+/storage/*
+!/storage/.gitignore

@@ -13,4 +13,6 @@ RUN mkdir -p /var/www/html/storage /var/www/html/bootstrap/cache \
     && chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache \
     && chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
+COPY ./php.ini /usr/local/etc/php/conf.d/php.ini
+
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8000"]
