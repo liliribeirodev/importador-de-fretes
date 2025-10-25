@@ -31,6 +31,7 @@ docker exec -it importador_app bash
 composer install
 php artisan key:generate
 php artisan migrate
+php artisan db:seed
 ```
 
 4. **Acessar o projeto no navegador**
