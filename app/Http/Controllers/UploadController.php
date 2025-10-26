@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Jobs\ProcessarCsvsJob;
 use App\Models\Cliente;
+use App\Models\Importacao;
 use Illuminate\Support\Facades\Storage;
 
 class UploadController extends Controller
@@ -38,8 +39,34 @@ class UploadController extends Controller
             $caminhos[] = $caminho;
         }
 
-        ProcessarCsvsJob::dispatch($caminhos, $request->cliente_id);
+        $importacao = Importacao::create([
+            'cliente_id' => $request->cliente_id,
+            'status' => 'processing',
+            'arquivos' => $caminhos,
+        ]);
 
-        return back()->with('success', 'Arquivos enviados! O processamento será feito em background e pode levar alguns minutos.');
+        ProcessarCsvsJob::dispatch($caminhos, $request->cliente_id, $importacao->id);
+
+        return back()
+            ->with('importacao_id', $importacao->id)
+            ->with('success', 'Arquivos enviados! O sistema está processando...');
+    }
+
+    public function statusImportacao($id)
+    {
+        $importacao = Importacao::findOrFail($id);
+        return response()->json(['status' => $importacao->status]);
+    }
+
+    public function completeImportacao(Request $request, $id)
+    {
+        if ((string) session('importacao_id') !== (string) $id) {
+            return response()->json(['ok' => false, 'message' => 'ID de importação incompatível'], 403);
+        }
+
+        session()->forget('importacao_id');
+        session()->flash('success', 'Importação concluída com sucesso!');
+
+        return response()->json(['ok' => true]);
     }
 }
