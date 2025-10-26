@@ -11,6 +11,16 @@ services:
       - "8000:8000"
     depends_on:
       - db
+    environment:
+      APP_ENV: local
+      APP_DEBUG: 'true'
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: testello
+      DB_USERNAME: importador
+      DB_PASSWORD: importador
+    restart: unless-stopped
 
   db:
     image: mysql:8.0
@@ -24,6 +34,30 @@ services:
       - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
+      - ./docker/mysql/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: importador_worker
+    volumes:
+      - .:/var/www/html
+    working_dir: /var/www/html
+    depends_on:
+      - db
+      - app
+    environment:
+      APP_ENV: local
+      APP_DEBUG: 'true'
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: testello
+      DB_USERNAME: importador
+      DB_PASSWORD: importador
+    command: ["php", "/var/www/html/artisan", "queue:work", "--sleep=3", "--tries=3", "--timeout=3600"]
+    restart: unless-stopped
 
 volumes:
   db_data:

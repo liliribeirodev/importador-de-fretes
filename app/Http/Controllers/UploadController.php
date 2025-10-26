@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Jobs\ProcessarCsvsJob;
 use App\Models\Cliente;
+use Illuminate\Support\Facades\Storage;
 
 class UploadController extends Controller
 {
@@ -33,9 +34,8 @@ class UploadController extends Controller
 
         foreach ($request->file('arquivos') as $arquivo) {
             $nomeArquivo = $arquivo->getClientOriginalName();
-            $caminhoCompleto = $arquivo->move(storage_path('app/uploads'), $nomeArquivo);
-            \Log::info("Arquivo movido para storage/app/uploads: ".$nomeArquivo);
-            $caminhos[] = 'uploads/'.$nomeArquivo;
+            $caminho = Storage::disk('local')->putFileAs('uploads', $arquivo, $nomeArquivo);
+            $caminhos[] = $caminho;
         }
 
         ProcessarCsvsJob::dispatch($caminhos, $request->cliente_id);

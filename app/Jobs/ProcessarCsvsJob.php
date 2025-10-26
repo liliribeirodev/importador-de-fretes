@@ -33,9 +33,9 @@ class ProcessarCsvsJob implements ShouldQueue
      */
     public function handle(): void
     {
-        foreach ($this->arquivos as $caminhoArquivo) {
-
-            $caminhoCompleto = storage_path('app/' . $caminhoArquivo);
+        foreach ($this->arquivos as $caminhoArquivo)
+        {
+            $caminhoCompleto = Storage::disk('local')->path($caminhoArquivo);
 
             if (!file_exists($caminhoCompleto)) {
                 continue;
@@ -52,23 +52,19 @@ class ProcessarCsvsJob implements ShouldQueue
 
             while (($linha = fgetcsv($arquivo, 0, ',')) !== false)
             {
-                // pula linhas vazias ou nulas
                 if (!$linha || !is_array($linha) || count($linha) === 0) {
                     continue;
                 }
 
-                // define o cabeçalho, mas só se for uma linha válida
                 if (!$cabecalho) {
                     $cabecalho = array_map('trim', $linha);
-                    // se o cabeçalho tiver menos ou mais colunas que esperado, pula o arquivo
-                    if (count($cabecalho) < 5) { // ajuste mínimo de colunas esperado
+                    if (count($cabecalho) < 5) { 
                         \Log::error('Cabeçalho inválido: menos colunas que o esperado', ['linha' => $linha]);
-                        return; // aborta o Job
+                        return;
                     }
                     continue;
                 }
 
-                // verifica se número de colunas bate com o cabeçalho
                 if (count($linha) !== count($cabecalho)) {
                     \Log::warning('Linha ignorada: número de colunas diferente do cabeçalho', [
                         'linha' => $linha,
@@ -116,7 +112,8 @@ class ProcessarCsvsJob implements ShouldQueue
             }
 
             fclose($arquivo);
-            Storage::delete($caminhoArquivo);
+
+            Storage::disk('local')->delete($caminhoArquivo);
         }
     }
 }
