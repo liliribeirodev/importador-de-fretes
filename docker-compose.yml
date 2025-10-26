@@ -56,7 +56,7 @@ services:
       DB_DATABASE: testello
       DB_USERNAME: importador
       DB_PASSWORD: importador
-  command: ["/usr/local/bin/wait-for-db.sh", "php", "/var/www/html/artisan", "queue:work", "--sleep=3", "--tries=3", "--timeout=3600"]
+    command: ["/usr/local/bin/wait-for-db.sh", "php", "/var/www/html/artisan", "queue:work", "--sleep=3", "--tries=3", "--timeout=3600"]
     restart: unless-stopped
 
 volumes:
